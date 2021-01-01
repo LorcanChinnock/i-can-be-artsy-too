@@ -26,7 +26,7 @@ export default class App extends React.Component {
           <ul className="router-list">
             {this.links.map((value) => {
               return (
-                <li>
+                <li key={"link_" + value.link}>
                   <Link to={value.link}>{value.text}</Link>
                 </li>
               );
@@ -35,7 +35,11 @@ export default class App extends React.Component {
         </nav>
         <Switch>
           {this.links.map((value) => {
-            return <Route path={value.link}>{value.component}</Route>;
+            return (
+              <Route key={"route_" + value.link} path={value.link}>
+                {value.component}
+              </Route>
+            );
           })}
           <Route path="*">
             <Redirect to={this.links[0].link} />
