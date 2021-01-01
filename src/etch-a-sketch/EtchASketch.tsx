@@ -1,19 +1,19 @@
 import * as React from "react";
 import * as Three from "three";
-import {
-  ECardinalDirection,
-  getRandomCardinalDirection,
-} from "../utils/direction-utils";
+import { animate } from "../utils/animate-utils";
+import { getRandomCardinalDirection } from "../utils/direction-utils";
+import { moveInDirection } from "../utils/vector-3-utils";
 
 export default class EtchASketch extends React.Component {
-  updateSpeedMs = 1;
-  directionsToExpandTo = 3;
-  mount!: HTMLDivElement | null;
-  scene!: Three.Scene;
-  lastPoint!: Three.Vector3;
-  previousDirection: any;
-  renderer: any;
-  camera: any;
+  private mount!: HTMLDivElement | null;
+  private scene!: Three.Scene;
+  private previousDirection: any;
+  private renderer: any;
+  private camera: any;
+  private lastPoint = new Three.Vector3(0, 0, 0);
+  private lineMaterial = new Three.LineBasicMaterial({
+    color: "white",
+  });
 
   render() {
     return <div ref={(ref) => (this.mount = ref)} />;
@@ -21,75 +21,47 @@ export default class EtchASketch extends React.Component {
 
   componentDidMount() {
     this.scene = new Three.Scene();
-    this._setupCamera();
-    this._setupRenderer();
+    this.setupCamera();
+    this.setupRenderer();
 
-    this.lastPoint = new Three.Vector3(0, 0, 0);
-
-    setInterval(() => {
-      const line = this._getNewLine();
-      this._renderLine(line);
-    }, this.updateSpeedMs);
+    animate(() => {
+      this.createAndRenderLine();
+    });
   }
 
-  _getNewLine() {
-    const material = new Three.LineBasicMaterial({
-      color: "#ffffff",
-    });
-    const newPoint = this._getNewPoint();
+  private createAndRenderLine() {
+    const line = this.getNewLine();
+    this.renderLine(line);
+  }
+
+  private getNewLine() {
+    const newPoint = this.getNewPoint();
     const geometry = new Three.BufferGeometry().setFromPoints([
       this.lastPoint,
       newPoint,
     ]);
     this.lastPoint = newPoint;
-    const line = new Three.Line(geometry, material);
-    return line;
+    return new Three.Line(geometry, this.lineMaterial);
   }
 
-  _getNewPoint() {
-    var newDirection = getRandomCardinalDirection(
-      true,
-      this.previousDirection && this.previousDirection
-    );
+  private getNewPoint() {
+    var newDirection = getRandomCardinalDirection(true, this.previousDirection);
     this.previousDirection = newDirection;
-    const lastPointToUse = new Three.Vector3(0, 0, 0);
-    lastPointToUse.setX(this.lastPoint.x);
-    lastPointToUse.setY(this.lastPoint.y);
-    lastPointToUse.setZ(this.lastPoint.z);
-    switch (newDirection) {
-      case ECardinalDirection.up:
-        return lastPointToUse.setY(++lastPointToUse.y);
-      case ECardinalDirection.down:
-        return lastPointToUse.setY(--lastPointToUse.y);
-      case ECardinalDirection.right:
-        return lastPointToUse.setX(++lastPointToUse.x);
-      case ECardinalDirection.left:
-        return lastPointToUse.setX(--lastPointToUse.x);
-      case ECardinalDirection.forward:
-        return lastPointToUse.setZ(++lastPointToUse.z);
-      case ECardinalDirection.back:
-        return lastPointToUse.setZ(--lastPointToUse.z);
-      default:
-        return lastPointToUse;
-    }
+    return moveInDirection(this.lastPoint, newDirection);
   }
 
-  _getRandomDirection() {
-    return Math.floor(Math.random() * (this.directionsToExpandTo - 0 + 1) + 0);
-  }
-
-  _renderLine(line: Three.Line) {
+  private renderLine(line: Three.Line) {
     this.scene.add(line);
     this.renderer.render(this.scene, this.camera);
   }
 
-  _setupRenderer() {
+  private setupRenderer() {
     this.renderer = new Three.WebGLRenderer();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.mount?.appendChild(this.renderer.domElement);
   }
 
-  _setupCamera() {
+  private setupCamera() {
     this.camera = new Three.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
