@@ -1,9 +1,12 @@
 import * as React from "react";
 import * as Three from "three";
-import { ECardinalDirection, getRandomCardinalDirection } from "../utils/direction-utils";
+import {
+  ECardinalDirection,
+  getRandomCardinalDirection,
+} from "../utils/direction-utils";
 
 export default class EtchASketch extends React.Component {
-    updateSpeedMs = 1;
+  updateSpeedMs = 1;
   directionsToExpandTo = 3;
   mount!: HTMLDivElement | null;
   scene!: Three.Scene;
@@ -31,7 +34,7 @@ export default class EtchASketch extends React.Component {
 
   _getNewLine() {
     const material = new Three.LineBasicMaterial({
-      color: '#ffffff',
+      color: "#ffffff",
     });
     const newPoint = this._getNewPoint();
     const geometry = new Three.BufferGeometry().setFromPoints([
@@ -44,34 +47,35 @@ export default class EtchASketch extends React.Component {
   }
 
   _getNewPoint() {
-    var newDirection = getRandomCardinalDirection(true, this.previousDirection && this.previousDirection);
+    var newDirection = getRandomCardinalDirection(
+      true,
+      this.previousDirection && this.previousDirection
+    );
     this.previousDirection = newDirection;
-    const lastPointToUse = new Three.Vector3(0,0,0);
+    const lastPointToUse = new Three.Vector3(0, 0, 0);
     lastPointToUse.setX(this.lastPoint.x);
     lastPointToUse.setY(this.lastPoint.y);
     lastPointToUse.setZ(this.lastPoint.z);
-    switch(newDirection){
-        case ECardinalDirection.up:
-            return lastPointToUse.setY(++lastPointToUse.y);
-        case ECardinalDirection.down:
-            return lastPointToUse.setY(--lastPointToUse.y);
-        case ECardinalDirection.right:
-            return lastPointToUse.setX(++lastPointToUse.x);
-        case ECardinalDirection.left:
-            return lastPointToUse.setX(--lastPointToUse.x);
-        case ECardinalDirection.forward:
-            return lastPointToUse.setZ(++lastPointToUse.z);
-        case ECardinalDirection.back:
-            return lastPointToUse.setZ(--lastPointToUse.z);
-        default:
-            return lastPointToUse;
+    switch (newDirection) {
+      case ECardinalDirection.up:
+        return lastPointToUse.setY(++lastPointToUse.y);
+      case ECardinalDirection.down:
+        return lastPointToUse.setY(--lastPointToUse.y);
+      case ECardinalDirection.right:
+        return lastPointToUse.setX(++lastPointToUse.x);
+      case ECardinalDirection.left:
+        return lastPointToUse.setX(--lastPointToUse.x);
+      case ECardinalDirection.forward:
+        return lastPointToUse.setZ(++lastPointToUse.z);
+      case ECardinalDirection.back:
+        return lastPointToUse.setZ(--lastPointToUse.z);
+      default:
+        return lastPointToUse;
     }
   }
 
   _getRandomDirection() {
-    return Math.floor(
-      Math.random() * (this.directionsToExpandTo - 0 + 1) + 0
-    );
+    return Math.floor(Math.random() * (this.directionsToExpandTo - 0 + 1) + 0);
   }
 
   _renderLine(line: Three.Line) {
